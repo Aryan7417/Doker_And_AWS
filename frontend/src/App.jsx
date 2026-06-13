@@ -7,8 +7,8 @@ import * as Y from "yjs"
 import { SocketIOProvider } from "y-socket.io"
 
 const App = () => {
-  const providerRef = useRef(null)
-  const bindingRef = useRef(null)
+  //const providerRef = useRef(null)
+ // const bindingRef = useRef(null)
 
   const editorRef = useRef(null)
   const [username, setUsername] = useState(() => {
@@ -23,6 +23,60 @@ const App = () => {
   const yText = useMemo(() => ydoc.getText("monaco"), [ydoc])
 
 
+// const handeMount = (editor) => {
+
+//   if (providerRef.current) return
+
+//   editorRef.current = editor
+
+//   const provider = new SocketIOProvider(
+//     "http://localhost:3000",
+//     "monaco",
+//     ydoc,
+//     {
+//       autoConnect: true,
+//     }
+//   )
+
+//   providerRef.current = provider
+
+//   provider.awareness.setLocalStateField(
+//     "user",
+//     {
+//       name: username,
+//     }
+//   )
+
+//   provider.awareness.on("change", () => {
+
+//     const states = Array.from(
+//       provider.awareness.getStates().values()
+//     )
+
+//     setUser(
+//       states
+//         .map((state) => state.user)
+//         .filter(Boolean)
+//     )
+
+//     console.log(states)
+//   })
+
+//   const binding = new MonacoBinding(
+//     yText,
+//     editor.getModel(),
+//     new Set([editor]),
+//     provider.awareness
+//   )
+
+//   bindingRef.current = binding
+// }
+
+
+
+const providerRef = useRef(null)
+const bindingRef = useRef(null)
+
 const handeMount = (editor) => {
 
   if (providerRef.current) return
@@ -30,7 +84,7 @@ const handeMount = (editor) => {
   editorRef.current = editor
 
   const provider = new SocketIOProvider(
-    "http://localhost:3000",
+    "/",
     "monaco",
     ydoc,
     {
@@ -40,12 +94,16 @@ const handeMount = (editor) => {
 
   providerRef.current = provider
 
-  provider.awareness.setLocalStateField(
-    "user",
-    {
-      name: username,
-    }
-  )
+  setTimeout(() => {
+
+    provider.awareness.setLocalStateField(
+      "user",
+      {
+        name: username,
+      }
+    )
+
+  }, 0)
 
   provider.awareness.on("change", () => {
 
@@ -58,8 +116,6 @@ const handeMount = (editor) => {
         .map((state) => state.user)
         .filter(Boolean)
     )
-
-    console.log(states)
   })
 
   const binding = new MonacoBinding(
@@ -71,7 +127,6 @@ const handeMount = (editor) => {
 
   bindingRef.current = binding
 }
-
 
 
   const handleJoin = (e) => {
@@ -88,123 +143,72 @@ const handeMount = (editor) => {
   }
 
 
+
   useEffect(() => {
-    console.log("effect running")
 
+  return () => {
 
-    if (!username || !editorRef.current) return
-    const provider = new SocketIOProvider("http://localhost:3000", "monaco", ydoc, {
-      autoConnect: true,
-    })
-    // }
-    provider.awareness.setLocalStateField("user", { inputValue: username })
-
-    provider.awareness.on("change", () => {
-      const states = Array.from(provider.awareness.getStates().values())
-      setUser(
-        states
-          .map((state) => state.user)
-          .filter(Boolean)
-      )
-      console.log(states)
-    })
-
-    console.log("provider connected")
-
-    const handBeforeUnload = () => {
-      provider.awareness.setLocalStateField("user", null)
-    }
-
-    window.addEventListener("beforeunload", handBeforeUnload)
-
-
-    const monacoBinding = new MonacoBinding(
-      yText,
-      editorRef.current.getModel(),
-      new Set([editorRef.current]),
-      provider.awareness
-
-    )
-    console.log("provider created")
-    return () => {
-      // monacoBinding.destroy()
-      // provider.disconnect()
-       bindingRef.current?.destroy()
+    bindingRef.current?.destroy()
 
     providerRef.current?.disconnect()
-      window.removeEventListener("beforeunload", handBeforeUnload)
 
-    }
-    //}
-  }, [
-    editorRef.current,
-    username
-  ])
+  }
 
-  //   useEffect(() => {
+}, [])
+  // useEffect(() => {
+  //   console.log("effect running")
+
 
   //   if (!username || !editorRef.current) return
-
-  //   const provider = new SocketIOProvider(
-  //     "http://localhost:3000",
-  //     "monaco",
-  //     ydoc,
-  //     {
-  //       autoConnect: true,
-  //     }
-  //   )
-  //   console.log("connected")
-  //   console.log(states)
-
-  //   provider.awareness.setLocalStateField("user", {
-  //     inputValue: username,
+  //   const provider = new SocketIOProvider("http://localhost:3000", "monaco", ydoc, {
+  //     autoConnect: true,
   //   })
+  //   // }
+  //   provider.awareness.setLocalStateField("user", { inputValue: username })
 
   //   provider.awareness.on("change", () => {
-
-  //     const states = Array.from(
-  //       provider.awareness.getStates().values()
-  //     )
-
+  //     const states = Array.from(provider.awareness.getStates().values())
   //     setUser(
   //       states
   //         .map((state) => state.user)
   //         .filter(Boolean)
   //     )
+  //     console.log(states)
   //   })
 
-  //   const handleBeforeUnload = () => {
-  //     provider.awareness.setLocalStateField(
-  //       "user",
-  //       null
-  //     )
+  //   console.log("provider connected")
+
+  //   const handBeforeUnload = () => {
+  //     provider.awareness.setLocalStateField("user", null)
   //   }
 
-  //   window.addEventListener(
-  //     "beforeunload",
-  //     handleBeforeUnload
-  //   )
+  //   window.addEventListener("beforeunload", handBeforeUnload)
+
 
   //   const monacoBinding = new MonacoBinding(
   //     yText,
   //     editorRef.current.getModel(),
   //     new Set([editorRef.current]),
   //     provider.awareness
+
   //   )
-
+  //   console.log("provider created")
   //   return () => {
+  //     // monacoBinding.destroy()
+  //     // provider.disconnect()
+  //      bindingRef.current?.destroy()
 
-  //     monacoBinding.destroy()
+  //   providerRef.current?.disconnect()
+  //     window.removeEventListener("beforeunload", handBeforeUnload)
 
-  //     provider.disconnect()
-
-  //     window.removeEventListener(
-  //       "beforeunload",
-  //       handleBeforeUnload
-  //     )
   //   }
+  //   //}
+  // }, [
+  //   editorRef.current,
+  //   username
+  // ])
+  
 
-  // }, [username , editorRef.current])
 
   if (!username) {
     return (
